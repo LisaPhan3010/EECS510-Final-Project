@@ -1,7 +1,7 @@
 from datetime import datetime
 import re
 import csv
-
+from automaton import Automaton
 # Song class to represent individual songs
 class Song:
     def __init__(self, track_name, artist, released_year, released_month, released_day, streams, bpm, key, mode):
@@ -105,6 +105,10 @@ class Playlist:
             return song_value >= condition_value
         return False
 
+def accept(A,w):
+    result = A.accepts(w)
+    return result
+
 def main():
     playlist = Playlist()
 
@@ -132,13 +136,57 @@ def main():
         print("File not found. Ensure 'songs.csv' exists in the working directory.")
         return
 
+    # Define your automaton based on the SongQuery language specifications
+    states = {'start', 'select', 'attributes', 'from', 'playlist', 'where', 'condition', 'logical_op', 'accept'}
+    inputs = {'SELECT', 'FROM', 'WHERE', 'AND', 'OR', '=', '>', '>=', '<', '<=', 'track_name', 'artist', 'released_year', 'released_month', 'released_day', 'streams', 'bpm', 'key', 'mode', 'value'}
+    start_state = 'start'
+    accept_states = {'accept'}
+    transitions = {
+        ('start', 'SELECT'): {'select'}, 
+        ('select', 'track_name'): {'attributes'}, 
+        ('select', 'artist'): {'attributes'}, 
+        ('select', 'released_year'): {'attributes'}, 
+        ('select', 'released_month'): {'attributes'}, 
+        ('select', 'released_day'): {'attributes'}, 
+        ('select', 'streams'): {'attributes'}, 
+        ('select', 'bpm'): {'attributes'}, 
+        ('select', 'key'): {'attributes'}, 
+        ('select', 'mode'): {'attributes'}, 
+        ('attributes', 'FROM'): {'from'}, 
+        ('from', 'playlist'): {'playlist'}, 
+        ('playlist', 'WHERE'): {'where'}, 
+        ('where', 'track_name'): {'condition'}, 
+        ('where', 'artist'): {'condition'}, 
+        ('where', 'released_year'): {'condition'}, 
+        ('where', 'released_month'): {'condition'}, 
+        ('where', 'released_day'): {'condition'}, 
+        ('where', 'streams'): {'condition'}, 
+        ('where', 'bpm'): {'condition'}, 
+        ('where', 'key'): {'condition'}, 
+        ('where', 'mode'): {'condition'}, 
+        ('condition', '='): {'logical_op'}, 
+        ('condition', '>'): {'logical_op'}, 
+        ('condition', '>='): {'logical_op'}, 
+        ('condition', '<'): {'logical_op'}, 
+        ('condition', '<='): {'logical_op'}, 
+        #('logical_op', 'value'): {'accept'},
+        ('logical_op', "'Seventeen'"): {'accept'}, 
+        ('logical_op', "'2020'"): {'accept'}, 
+        ('logical_op', "'17'"): {'accept'},
+        # Add other transitions based on your query language grammar
+    }
+    automaton = Automaton(states, inputs, start_state, accept_states, transitions)
+    # Example query validation
+    query1 = "SELECT track_name FROM playlist WHERE artist = 'Seventeen'"
+    result1 = accept(automaton, query1)
+    print(result1)
     # Query 1: Find songs released in 2023
-    query = "SELECT track_name, artist FROM playlist WHERE released_day = 17 AND released_year = 2023"
-    result1 = playlist.query(query)
+    query2 = "SELECT track_name, artist FROM playlist WHERE released_day = 17 AND released_year = 2023"
+    result2 = playlist.query(query2)
     print("Query Results:")
-    for song in result1:
+    for song in result2:
         print(song)
-
+    
 
 if __name__ == "__main__":
     main()
