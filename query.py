@@ -136,7 +136,6 @@ def main():
         print("File not found. Ensure 'songs.csv' exists in the working directory.")
         return
 
-    # Define your automaton based on the SongQuery language specifications
     states = {'start', 'select', 'attributes', 'from', 'playlist', 
               'where', 'condition', 'logical_op', 'accept'}
     inputs = {'SELECT', 'FROM', 'WHERE', 'AND', 'OR', '=', '>', '>=', '<', '<=', 'track_name', 'artist', 'released_year', 
@@ -158,10 +157,8 @@ def main():
         ('condition', '='): {'logical_op'}, 
         ('logical_op', '2021'): {'accept'}, 
         ('logical_op', 'value'): {'accept'},
-        # Add other transitions based on your query language grammar
     }
     automaton = Automaton(states, inputs, start_state, accept_states, transitions)
-    # Query: Find songs and artist name released in Oct 2023
     query1 = "SELECT track_name, artist FROM playlist WHERE released_month = 12 AND released_year = 2021"
     result1 = accept(automaton, query1)
     print(result1)
